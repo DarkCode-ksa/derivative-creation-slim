@@ -9,6 +9,6 @@ dependencies:
   - gxx_linux-64
   - make
   - gsl
-  - cmake          # ← مهم جدًا لبناء SLiM
-  - eigen         # ← مطلوب لـ SLiM
-  - git           # ← إذا كنت تستنسخ من GitHub
+  - cmake
+  - eigen
+  - git
