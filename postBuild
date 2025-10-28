@@ -1,24 +1,39 @@
 #!/bin/bash
-set -e
+set -e  # توقف عند أول خطأ
 
-echo "Installing SLiM from source..."
+echo "=== تثبيت SLiM من المصدر ==="
 
-# تنزيل SLiM 4.2
-wget -q https://github.com/MesserLab/SLiM/releases/download/v4.2/SLiM-4.2.tar.gz
-tar -xzf SLiM-4.2.tar.gz
-cd SLiM-4.2
+# تحقق من وجود cmake و gcc
+command -v cmake >/dev/null 2>&1 || { echo "خطأ: cmake غير مثبت"; exit 1; }
+command -v g++ >/dev/null 2>&1 || { echo "خطأ: g++ غير مثبت"; exit 1; }
 
-# تجميع
+# استنساخ SLiM إذا لم يكن موجودًا
+if [ ! -d "slim" ]; then
+    echo "استنساخ SLiM..."
+    git clone https://github.com/MesserLab/SLiM.git slim
+fi
+
+cd slim
+
+# تنظيف البناء السابق
+rm -rf build/
+
+# إنشاء مجلد بناء
 mkdir build && cd build
+
+# تكوين وبناء
+echo "تشغيل cmake..."
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j2
 
-# نقل الملف التنفيذي إلى PATH
-cp slim /usr/local/bin/
-cd ../..
+echo "تشغيل make..."
+make -j$(nproc)
 
-# تنظيف
-rm -rf SLiM-4.2 SLiM-4.2.tar.gz
+# نسخ الثنائي إلى PATH
+echo "تثبيت SLiM في /usr/local/bin..."
+cp slim /usr/local/bin/slim
 
-echo "SLiM installed successfully!"
-slim -version
+# اختبار التثبيت
+echo "اختبار SLiM..."
+slim -version || { echo "فشل تشغيل SLiM"; exit 1; }
+
+echo "تم تثبيت SLiM بنجاح!"
