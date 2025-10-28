@@ -1,13 +1,8 @@
-# Derivative Creation Model - SLiM Simulation
+# Derivative Creation Model - SLiM on MyBinder
 
-محاكاة جينية لاختبار **فرضية الخلق المشتق** باستخدام SLiM.
+محاكاة جينية لفرضية **الخلق المشتق**
 
-## الميزات:
-- بداية من آدم وحواء (زوج واحد)
-- تتبع Y-chromosome و mtDNA
-- حدث تضاعف الكروموسوم X
-- قياس زمن الالتقاء والتنوع الأليلي
-
-## تشغيل المحاكاة:
+## تشغيل:
 ```bash
 slim slim_script.slim > results.log
+cat results.log
