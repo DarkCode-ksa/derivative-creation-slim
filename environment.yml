@@ -12,6 +12,4 @@ dependencies:
   - gxx_linux-64
   - make
   - gsl
-  - pip
-  - pip:
-      - vcftools
+    
