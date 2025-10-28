@@ -1,39 +1,38 @@
 #!/bin/bash
 set -e  # توقف عند أول خطأ
 
-echo "=== تثبيت SLiM من المصدر ==="
+echo "بدء تثبيت SLiM..."
 
-# تحقق من وجود cmake و gcc
-command -v cmake >/dev/null 2>&1 || { echo "خطأ: cmake غير مثبت"; exit 1; }
-command -v g++ >/dev/null 2>&1 || { echo "خطأ: g++ غير مثبت"; exit 1; }
+# تحقق من وجود cmake و g++
+command -v cmake >/dev/null || { echo "خطأ: cmake غير مثبت"; exit 1; }
+command -v g++ >/dev/null || { echo "خطأ: g++ غير مثبت"; exit 1; }
 
 # استنساخ SLiM إذا لم يكن موجودًا
 if [ ! -d "slim" ]; then
-    echo "استنساخ SLiM..."
-    git clone https://github.com/MesserLab/SLiM.git slim
+    echo "استنساخ SLiM من GitHub..."
+    git clone --depth 1 https://github.com/MesserLab/SLiM.git slim
 fi
 
 cd slim
 
-# تنظيف البناء السابق
-rm -rf build/
-
-# إنشاء مجلد بناء
+# تنظيف أي بناء سابق
+rm -rf build
 mkdir build && cd build
 
-# تكوين وبناء
+# تكوين المشروع
 echo "تشغيل cmake..."
 cmake .. -DCMAKE_BUILD_TYPE=Release
 
+# البناء
 echo "تشغيل make..."
 make -j$(nproc)
 
-# نسخ الثنائي إلى PATH
-echo "تثبيت SLiM في /usr/local/bin..."
-cp slim /usr/local/bin/slim
+# تثبيت البرنامج
+echo "نسخ slim إلى /usr/local/bin..."
+sudo cp slim /usr/local/bin/slim
 
 # اختبار التثبيت
 echo "اختبار SLiM..."
-slim -version || { echo "فشل تشغيل SLiM"; exit 1; }
+slim -version && echo "تم تثبيت SLiM بنجاح!"
 
-echo "تم تثبيت SLiM بنجاح!"
+echo "اكتمل تثبيت SLiM."
