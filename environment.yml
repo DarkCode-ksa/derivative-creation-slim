@@ -1,9 +1,10 @@
 name: slim-env
 channels:
   - conda-forge
+  - bioconda
 dependencies:
   - python=3.9
-  - slim=4.2
+  - slim-sim=4.2
   - jupyter
   - numpy
   - pandas
@@ -11,4 +12,4 @@ dependencies:
   - tskit
   - pip
   - pip:
-  - vcftools
+      - vcftools
