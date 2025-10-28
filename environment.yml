@@ -1,6 +1,3 @@
-name: slim-env
-channels:
-  - conda-forge
 dependencies:
   - python=3.9
   - jupyter
@@ -12,4 +9,6 @@ dependencies:
   - gxx_linux-64
   - make
   - gsl
-    
+  - cmake          # ← مهم جدًا لبناء SLiM
+  - eigen         # ← مطلوب لـ SLiM
+  - git           # ← إذا كنت تستنسخ من GitHub
