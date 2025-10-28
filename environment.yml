@@ -1,15 +1,17 @@
 name: slim-env
 channels:
   - conda-forge
-  - bioconda
 dependencies:
   - python=3.9
-  - slim-sim=4.2
   - jupyter
   - numpy
   - pandas
   - matplotlib
   - tskit
+  - gcc_linux-64
+  - gxx_linux-64
+  - make
+  - gsl
   - pip
   - pip:
       - vcftools
