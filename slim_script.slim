@@ -1,83 +1,64 @@
-// slim_script.slim
-// Derivative Creation Model - Ready for MyBinder
+// slim_script.slim - MyBinder Ready
 initialize() {
     initializeSLiMOptions(keepPedigrees=T);
-    defineConstant("L", 1e6); defineConstant("L_Y", 1e5); defineConstant("L_MT", 1e5);
-    initializeMutationType("m1", 0.5, "f", 0.0); // Neutral
-    initializeMutationType("m2", 0.5, "f", 0.1); // Selected (FOXP2-like)
-    initializeGenomicElementType("g1", c(m1, m2), c(0.99, 0.01));
-    initializeGenomicElementType("gY", m1, 1.0); initializeGenomicElementType("gMT", m1, 1.0);
+    defineConstant("L", 500000);  // 0.5 Mb لتسريع المحاكاة
+    initializeMutationType("m1", 0.5, "f", 0.0);
+    initializeGenomicElementType("g1", m1, 1.0);
     initializeGenomicElement(g1, 0, L-1);
-    initializeGenomicElement(gY, L, L + L_Y - 1);
-    initializeGenomicElement(gMT, L + L_Y, L + L_Y + L_MT - 1);
-    initializeRecombinationRate(c(1e-8, 0, 0), c(L-1, L + L_Y - 1, L + L_Y + L_MT - 1));
-    initializeMutationRate(1e-8); gMT.setMutationRate(1e-7);
+    initializeRecombinationRate(1e-8);
+    initializeMutationRate(1e-8);
     initializeSex("A");
 }
 
 1 {
     sim.addSubpop("p1", 2);
-    inds = p1.individuals;
-    inds[0].setSex("M"); inds[1].setSex("F");
-    catn("Started: Adam (M) + Eve (F)");
+    p1.individuals[0].setSex("M");
+    p1.individuals[1].setSex("F");
+    catn("Adam & Eve started");
 }
 
-1:500 late() {
-    size = asInteger(2 * exp(0.015 * sim.generation));
-    if (size > 10000) size = 10000;
+1:300 late() {
+    size = min(10000, asInteger(2 * exp(0.02 * sim.generation)));
     p1.setSubpopulationSize(size);
 }
 
-100 late() {
+100 late() { 
     males = p1.individuals[p1.individuals.sex == "M"];
-    if (males.size() > 10) {
-        remove = sample(males, asInteger(0.7 * males.size()));
-        p1.removeIndividuals(remove);
-    }
-    catn("Patrilineal skew at gen " + sim.generation);
+    if (males.size() > 5) p1.removeIndividuals(sample(males, asInteger(0.7 * males.size())));
+    catn("Patrilineal skew");
 }
 
 200 late() {
-    old_size = p1.individualCount;
-    new_size = asInteger(old_size * 0.5);
-    if (new_size > 10) {
-        p2 = sim.addSubpopSplit("p2", new_size, p1);
-        for (genome in p2.genomes) {
-            if (genome.isNullGenome == F) {
-                genome.addNewDrawnMutation(m1, rdunif(1, 0, L-1));
-            }
-        }
-        catn("Wave of replacement: " + new_size + " new inds");
+    n = asInteger(p1.individualCount * 0.5);
+    if (n > 5) {
+        p2 = sim.addSubpopSplit("p2", n, p1);
+        catn("Wave of replacement: " + n);
     }
 }
 
 300 late() {
     females = p1.individuals[p1.individuals.sex == "F"];
-    target = sample(females, asInteger(max(1, 0.05 * females.size())));
-    for (ind in target) {
-        start = rdunif(1, 0, L-5000);
-        for (i in 0:9) {
-            pos = start + rdunif(1, 0, 4999);
-            ind.genomes[0].addNewDrawnMutation(m1, pos);
-        }
+    n = asInteger(max(1, 0.1 * females.size()));
+    for (ind in sample(females, n)) {
+        for (i in 1:5) ind.genomes[0].addNewDrawnMutation(m1, rdunif(1, 0, L-1));
     }
-    catn("X duplication in " + target.size() + " females");
+    catn("X duplication in " + n + " females");
 }
 
-8000 late() {
-    catn("\n=== FINAL RESULTS ===");
+4000 late() {
+    catn("\n=== RESULTS ===");
     catn("Population: " + p1.individualCount);
-    treeSeq = sim.treeSeqMetadata();
-    y_coal = mean(sim.generation - sim.chromosomes[gY].mutations.individuals.genome.nodes.generation);
-    mt_coal = mean(sim.generation - sim.chromosomes[gMT].mutations.individuals.genome.nodes.generation);
-    catn("Y coalescence: ~" + asInteger(y_coal) + " gen (~" + asInteger(y_coal*25) + " years)");
-    catn("mtDNA coalescence: ~" + asInteger(mt_coal) + " gen (~" + asInteger(mt_coal*25) + " years)");
-    het_auto = p1.heterozygosity(g1);
-    het_X_f = p1.heterozygosity(g1, sex="F");
-    het_Y = p1.heterozygosity(gY, sex="M");
-    catn("Het (Autosome/X): " + format("%.6f", het_auto));
-    catn("Het (X females): " + format("%.6f", het_X_f));
-    catn("Het (Y males): " + format("%.6f", het_Y));
+    
+    // تقدير زمن الالتقاء
+    muts = sim.mutations;
+    if (size(muts) > 0) {
+        ages = sim.generation - muts.originGeneration;
+        catn("Mean mutation age: " + mean(ages) + " gen (~" + (mean(ages)*25) + " years)");
+    }
+    
+    het = p1.heterozygosity();
+    catn("Heterozygosity: " + format("%.6f", het));
+    
     p1.genomes.outputVCF("output.vcf");
     sim.treeSeqOutput("trees.trees");
     catn("Saved: output.vcf, trees.trees");
