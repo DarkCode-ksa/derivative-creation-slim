@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+echo "Installing SLiM from source..."
+
+# تنزيل SLiM 4.2
+wget -q https://github.com/MesserLab/SLiM/releases/download/v4.2/SLiM-4.2.tar.gz
+tar -xzf SLiM-4.2.tar.gz
+cd SLiM-4.2
+
+# تجميع
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j2
+
+# نقل الملف التنفيذي إلى PATH
+cp slim /usr/local/bin/
+cd ../..
+
+# تنظيف
+rm -rf SLiM-4.2 SLiM-4.2.tar.gz
+
+echo "SLiM installed successfully!"
+slim -version
